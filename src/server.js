@@ -23,7 +23,7 @@ app.prepare().then(() => {
 		socket.on('createRoom', (username, callback) => {
 			console.log('creating room');
 			const code = uuidv4();
-			rooms[code] = { participants: [{ username, leader: true }] };
+			rooms[code] = { participants: [{ username }], leader: username };
 			callback(code);
 			console.log(rooms);
 		});

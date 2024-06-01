@@ -8,7 +8,9 @@ export default function App() {
 	const cookies = useCookies();
 	const roomCode = cookies.get('roomCode');
 	const router = useRouter();
-	const [roomDetails, setRoomDetails] = useState({ participants: [] });
+	const username = cookies.get('username');
+
+	const [roomDetails, setRoomDetails] = useState<any>({ participants: [] });
 
 	useEffect(() => {
 		socket.connect();
@@ -28,6 +30,7 @@ export default function App() {
 					<li key={index}>{participant.username}</li>
 				))}
 			</ul>
+			{username === roomDetails.leader && <button>start quiz</button>}
 		</>
 	);
 }
