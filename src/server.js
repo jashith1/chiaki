@@ -14,13 +14,22 @@ app.prepare().then(() => {
 
 	const io = new Server(httpServer);
 
+	const rooms = {};
+
 	io.on('connection', (socket) => {
 		socket.on('disconnect', () => {
 			console.log('client disconnected');
 		});
-		socket.on('createRoom', (arg, callback) => {
+		socket.on('createRoom', (username, callback) => {
 			console.log('creating room');
-			callback(uuidv4());
+			const code = uuidv4();
+			rooms[code] = { participants: [{ username, leader: true }] };
+			callback(code);
+			console.log(rooms);
+		});
+
+		socket.on('roomDetails', (roomCode, callback) => {
+			callback(rooms[roomCode]);
 		});
 		console.log('client connected');
 	});

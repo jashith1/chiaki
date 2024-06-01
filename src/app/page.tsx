@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { FormEventHandler, useEffect, useState } from 'react';
 import socket from '../socket/socket';
 import joinRoom from '../socket/joinRoom';
 import { useRouter } from 'next/navigation';
@@ -10,8 +10,10 @@ export default function Page() {
 	const router = useRouter();
 	const cookies = useCookies();
 
-	function createRoom() {
-		socket.emit('createRoom', 'example', (code: string) => {
+	function createRoom(e: any) {
+		e.preventDefault();
+		const username = e.target['userName'].value;
+		socket.emit('createRoom', username, (code: string) => {
 			cookies.set('roomCode', code);
 			router.push('/room');
 		});
@@ -25,9 +27,11 @@ export default function Page() {
 	return (
 		<>
 			<h1>Currently {isConnected ? 'connected' : 'disconnected'}</h1>
-			<button onClick={createRoom}>create room</button>
+			<form onSubmit={createRoom}>
+				<input type="text" name="userName" className="text-black" placeholder="username" />
+				<button type="submit">Create Room</button>
+			</form>
 			<br />
-			<button onClick={joinRoom}>join room</button>
 		</>
 	);
 }
