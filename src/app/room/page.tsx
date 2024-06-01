@@ -21,7 +21,7 @@ export default function App() {
 
 	return (
 		<>
-			<h1>roomCode: ${roomCode}</h1>
+			<h1>roomCode: {roomCode}</h1>
 			<h1>participants:</h1>
 			<ul>
 				{roomDetails?.participants?.map((participant: any, index: number) => (

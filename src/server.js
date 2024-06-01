@@ -28,6 +28,12 @@ app.prepare().then(() => {
 			console.log(rooms);
 		});
 
+		socket.on('joinRoom', (username, roomCode, callback) => {
+			if (!rooms[roomCode]) callback(false);
+			rooms[roomCode].participants.push({ username });
+			callback(true);
+		});
+
 		socket.on('roomDetails', (roomCode, callback) => {
 			callback(rooms[roomCode]);
 		});
