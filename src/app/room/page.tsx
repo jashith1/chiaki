@@ -21,6 +21,15 @@ export default function App() {
 
 	if (!roomCode) router.push('/');
 
+	function startQuiz() {
+		socket.emit('startQuiz', roomCode);
+	}
+
+	socket.on('startQuiz', () => {
+		console.log('routing to play');
+		router.push('/play');
+	});
+
 	return (
 		<>
 			<h1>roomCode: {roomCode}</h1>
@@ -30,7 +39,7 @@ export default function App() {
 					<li key={index}>{participant.username}</li>
 				))}
 			</ul>
-			{username === roomDetails.leader && <button>start quiz</button>}
+			{username === roomDetails.leader && <button onClick={startQuiz}>start quiz</button>}
 		</>
 	);
 }

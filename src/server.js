@@ -23,19 +23,24 @@ app.prepare().then(() => {
 		socket.on('createRoom', (username, callback) => {
 			console.log('creating room');
 			const code = uuidv4();
+			socket.join(code);
 			rooms[code] = { participants: [{ username }], leader: username };
 			callback(code);
-			console.log(rooms);
 		});
 
 		socket.on('joinRoom', (username, roomCode, callback) => {
 			if (!rooms[roomCode]) callback(false);
+			socket.join(roomCode);
 			rooms[roomCode].participants.push({ username });
 			callback(true);
 		});
 
 		socket.on('roomDetails', (roomCode, callback) => {
 			callback(rooms[roomCode]);
+		});
+
+		socket.on('startQuiz', (roomCode) => {
+			io.to(roomCode).emit('startQuiz');
 		});
 		console.log('client connected');
 	});

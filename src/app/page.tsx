@@ -26,6 +26,7 @@ export default function Page() {
 
 	function createRoom() {
 		socket.emit('createRoom', username, (code: string) => {
+			console.log('routing to room');
 			cookies.set('roomCode', code);
 			router.push('/room');
 		});
