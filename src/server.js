@@ -24,8 +24,20 @@ app.prepare().then(() => {
 			console.log('creating room');
 			const code = uuidv4();
 			socket.join(code);
-			rooms[code] = { participants: [{ username }], leader: username };
+			rooms[code] = { participants: [{ username, score: 0 }], leader: username, ready: 0 };
 			callback(code);
+		});
+
+		socket.on('ready', (roomCode, callback) => {
+			if (rooms[roomCode].ready === 0) {
+				rooms[roomCode].question = { question: '1+2 = ', options: ['1', '2', '3', '4'] };
+				rooms[roomCode].answer = 2;
+			}
+			callback(rooms[roomCode].question);
+			rooms[roomCode].ready++;
+			if (rooms[roomCode].ready === rooms[roomCode].participants.length) {
+				io.to(roomCode).emit('startQuestion');
+			}
 		});
 
 		socket.on('joinRoom', (username, roomCode, callback) => {
