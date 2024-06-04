@@ -9,6 +9,10 @@ const port = 3000;
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
+function getQuestion() {
+	return { question: '1+2 = ', options: ['1', '2', '3', '4'], answer: 2 };
+}
+
 app.prepare().then(() => {
 	const httpServer = createServer(handler);
 
@@ -22,28 +26,33 @@ app.prepare().then(() => {
 		});
 		socket.on('createRoom', (username, callback) => {
 			console.log('creating room');
-			const code = uuidv4();
-			socket.join(code);
-			rooms[code] = { participants: [{ username, score: 0 }], leader: username, ready: 0 };
-			callback(code);
+			const roomCode = uuidv4();
+			socket.join(roomCode);
+			rooms[roomCode] = { participants: [{ username, score: 0 }], leader: username, ready: 0 };
+			rooms[roomCode][username] = rooms[roomCode].participants[rooms[roomCode].participants.length - 1];
+			callback(roomCode);
 		});
 
-		socket.on('ready', (roomCode, callback) => {
-			if (rooms[roomCode].ready === 0) {
-				rooms[roomCode].question = { question: '1+2 = ', options: ['1', '2', '3', '4'] };
-				rooms[roomCode].answer = 2;
-			}
-			callback(rooms[roomCode].question);
+		socket.on('question', (roomCode, callback) => {
 			rooms[roomCode].ready++;
 			if (rooms[roomCode].ready === rooms[roomCode].participants.length) {
-				io.to(roomCode).emit('startQuestion');
+				rooms[roomCode].question = getQuestion();
+				rooms[roomCode].ready = 0;
+				console.log(rooms[roomCode]);
+				io.to(roomCode).emit('question', rooms[roomCode].question);
 			}
+		});
+
+		socket.on('answer', (roomCode, username, index, callback) => {
+			if (rooms[roomCode].answer === index) rooms[roomCode][username].score++;
+			callback();
 		});
 
 		socket.on('joinRoom', (username, roomCode, callback) => {
-			if (!rooms[roomCode]) callback(false);
+			if (!rooms[roomCode] || rooms[roomCode][username]) callback(false);
 			socket.join(roomCode);
-			rooms[roomCode].participants.push({ username });
+			rooms[roomCode].participants.push({ username, score: 0 });
+			rooms[roomCode][username] = rooms[roomCode].participants[rooms[roomCode].participants.length - 1];
 			callback(true);
 		});
 
@@ -51,8 +60,8 @@ app.prepare().then(() => {
 			callback(rooms[roomCode]);
 		});
 
-		socket.on('startQuiz', (roomCode) => {
-			io.to(roomCode).emit('startQuiz');
+		socket.on('startGame', (roomCode) => {
+			io.to(roomCode).emit('startGame');
 		});
 		console.log('client connected');
 	});

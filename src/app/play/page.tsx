@@ -6,22 +6,30 @@ import { useEffect, useState } from 'react';
 export default function App() {
 	const cookies = useCookies();
 	const roomCode = cookies.get('roomCode');
+	const username = cookies.get('username');
 	const [question, setQuestion] = useState<any>();
 
 	useEffect(() => {
 		socket.connect();
-		socket.emit('ready', roomCode, (res: any) => {
-			console.log('callback' + res);
-			setQuestion(res);
+		socket.emit('question', roomCode);
+		socket.on('question', (newQuestion) => {
+			setQuestion(newQuestion);
 		});
 	});
+	function handleOptionSelect(index: number) {
+		socket.emit('answer', roomCode, username, index, () => {
+			socket.emit('question', roomCode);
+		});
+	}
 
 	return (
 		<>
 			<h1>{question?.question}</h1>
 			<ul>
 				{question?.options?.map((option: any, index: number) => (
-					<li key={index}>{option}</li>
+					<li key={index} onClick={() => handleOptionSelect(index)}>
+						{option}
+					</li>
 				))}
 			</ul>
 		</>

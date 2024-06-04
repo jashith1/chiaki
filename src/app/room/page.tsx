@@ -17,18 +17,17 @@ export default function App() {
 		socket.emit('roomDetails', roomCode, (res: any) => {
 			setRoomDetails(res);
 		});
+		socket.on('startGame', () => {
+			console.log('routing to play');
+			router.push('/play');
+		});
 	});
 
 	if (!roomCode) router.push('/');
 
-	function startQuiz() {
-		socket.emit('startQuiz', roomCode);
+	function startGame() {
+		socket.emit('startGame', roomCode);
 	}
-
-	socket.on('startQuiz', () => {
-		console.log('routing to play');
-		router.push('/play');
-	});
 
 	return (
 		<>
@@ -39,7 +38,7 @@ export default function App() {
 					<li key={index}>{participant.username}</li>
 				))}
 			</ul>
-			{username === roomDetails.leader && <button onClick={startQuiz}>start quiz</button>}
+			{username === roomDetails.leader && <button onClick={startGame}>start quiz</button>}
 		</>
 	);
 }
