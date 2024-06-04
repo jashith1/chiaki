@@ -17,11 +17,16 @@ export default function App() {
 		socket.emit('roomDetails', roomCode, (res: any) => {
 			setRoomDetails(res);
 		});
+		socket.on('newParticipant', () => {
+			socket.emit('roomDetails', roomCode, (res: any) => {
+				setRoomDetails(res);
+			});
+		});
 		socket.on('startGame', () => {
 			console.log('routing to play');
 			router.push('/play');
 		});
-	});
+	}, []);
 
 	if (!roomCode) router.push('/');
 

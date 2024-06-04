@@ -10,7 +10,17 @@ const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
 function getQuestion() {
-	return { question: '1+2 = ', options: ['1', '2', '3', '4'], answer: 2 };
+	let num1 = Math.floor(Math.random() * 10);
+	let num2 = Math.floor(Math.random() * 10);
+	let ans = num1 + num2;
+	let index;
+	let options = [];
+	for (let i = 0; i < 4; i++) {
+		const shouldInclude = Math.random() < 0.25 * (i + 1) && !index;
+		if (shouldInclude) index = i;
+		options.push(shouldInclude ? ans : Math.floor(Math.random() * 20));
+	}
+	return { question: `${num1} + ${num2} = `, options, answer: index };
 }
 
 app.prepare().then(() => {
@@ -44,8 +54,9 @@ app.prepare().then(() => {
 		});
 
 		socket.on('answer', (roomCode, username, index, callback) => {
-			if (rooms[roomCode].answer === index) rooms[roomCode][username].score++;
+			if (rooms[roomCode].question.answer === index) rooms[roomCode][username].score++;
 			callback();
+			console.log(rooms[roomCode]);
 		});
 
 		socket.on('joinRoom', (username, roomCode, callback) => {
@@ -54,6 +65,7 @@ app.prepare().then(() => {
 			rooms[roomCode].participants.push({ username, score: 0 });
 			rooms[roomCode][username] = rooms[roomCode].participants[rooms[roomCode].participants.length - 1];
 			callback(true);
+			io.to(roomCode).emit('newParticipant');
 		});
 
 		socket.on('roomDetails', (roomCode, callback) => {
